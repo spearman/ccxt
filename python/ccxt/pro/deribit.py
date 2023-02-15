@@ -220,6 +220,7 @@ class deribit(Exchange, ccxt.async_support.deribit):
         """
         await self.load_markets()
         market = self.market(symbol)
+        symbol = market['symbol']
         url = self.urls['api']['ws']
         interval = self.safe_string(params, 'interval', '100ms')
         params = self.omit(params, 'interval')
@@ -236,6 +237,8 @@ class deribit(Exchange, ccxt.async_support.deribit):
         }
         request = self.deep_extend(message, params)
         trades = await self.watch(url, channel, request, channel, request)
+        if self.newUpdates:
+            limit = trades.getLimit(symbol, limit)
         return self.filter_by_since_limit(trades, since, limit, 'timestamp', True)
 
     def handle_trades(self, client, message):
